@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>画像をリサイズする</title>
+  <meta name="description" content="ブラウザ上で画像をリサイズ・フォーマット変換できるツール。複数画像の一括処理対応。すべてローカルで処理されます。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <h1 class="header-title">画像をリサイズする</h1>
+      <div class="header-badge">
+        <i data-lucide="shield-check" class="icon-sm"></i>
+        <span>ローカル処理モード</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Toast -->
+    <div id="success-toast" class="toast hidden">
+      <div class="toast-icon">
+        <i data-lucide="check-circle-2" class="icon-md"></i>
+      </div>
+      <div>
+        <p class="toast-title">保存が完了しました！</p>
+        <p class="toast-sub">すべての画像が正常にリサイズされました</p>
+      </div>
+      <button class="toast-close" onclick="document.getElementById('success-toast').classList.add('hidden')">
+        <i data-lucide="x" class="icon-sm"></i>
+      </button>
+    </div>
+
+    <!-- Section 01: Upload -->
+    <section class="section">
+      <input type="file" id="file-input" multiple accept="image/*" class="hidden" />
+      <div class="section-header">
+        <div class="step-num">01</div>
+        <h2 class="section-title">画像のアップロードと選択</h2>
+        <div class="section-actions">
+          <button id="clear-images-btn" class="btn-reset hidden">すべてリセット</button>
+        </div>
+      </div>
+
+      <div id="drop-zone" class="drop-zone">
+        <div class="drop-zone-icon">
+          <i data-lucide="upload" class="icon-lg"></i>
+        </div>
+        <p class="drop-zone-text">画像をここにドラッグ＆ドロップ</p>
+        <p class="drop-zone-sub">またはクリックしてファイルを選択</p>
+      </div>
+
+      <div id="image-grid" class="image-grid hidden"></div>
+    </section>
+
+    <!-- Section 02: Settings & Preview -->
+    <section class="section">
+      <div class="section-header">
+        <div class="step-num">02</div>
+        <h2 class="section-title">リサイズ設定とプレビュー</h2>
+      </div>
+
+      <div class="preview-layout">
+        <div class="preview-left">
+          <div id="preview-panel-empty" class="preview-empty">
+            <i data-lucide="image" class="icon-xl"></i>
+            <p>上のリストから画像を選択してください</p>
+          </div>
+
+          <div id="preview-panel-active" class="preview-active hidden">
+            <div class="preview-bar">
+              <span class="preview-bar-label">仕上がり予測</span>
+            </div>
+            <div class="preview-body">
+              <div class="preview-img-wrap">
+                <img id="main-preview-img" src="" alt="プレビュー" />
+              </div>
+              <div class="preview-stats">
+                <div>
+                  <p class="stat-label">リサイズ後</p>
+                  <p class="stat-value" style="margin-top:0.5rem"><span id="preview-w"></span> <span class="stat-unit">PX</span></p>
+                  <p class="stat-value" style="margin-top:0.5rem"><span id="preview-h"></span> <span class="stat-unit">PX</span></p>
+                </div>
+                <div>
+                  <p class="stat-label">予測容量</p>
+                  <p class="stat-value" style="margin-top:0.5rem"><span id="preview-size"></span> <span class="stat-unit" id="preview-unit"></span></p>
+                  <div class="stat-tags">
+                    <span id="preview-format" class="stat-tag"></span>
+                    <span id="preview-q" class="stat-tag font-num"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-panel">
+          <div class="settings-header">
+            <i data-lucide="settings-2" class="icon-sm"></i>
+            <h2>設定</h2>
+          </div>
+          <div class="settings-body">
+            <div class="settings-group">
+              <div class="mode-grid">
+                <button id="mode-dim" class="mode-btn active">サイズ指定</button>
+                <button id="mode-scale" class="mode-btn">比率指定</button>
+              </div>
+
+              <div id="dim-settings" class="settings-group">
+                <div class="ratio-row">
+                  <span class="label-sm">アスペクト比</span>
+                  <button id="toggle-ratio" class="toggle-btn active">固定</button>
+                </div>
+                <div class="dim-grid">
+                  <div class="dim-field">
+                    <div class="dim-label"><p>幅</p><span>PX</span></div>
+                    <input type="number" id="input-w" value="1200" class="input-number" />
+                  </div>
+                  <div class="dim-field">
+                    <div class="dim-label"><p>高さ</p><span>PX</span></div>
+                    <input type="number" id="input-h" value="800" disabled placeholder="AUTO" class="input-number locked" />
+                  </div>
+                </div>
+              </div>
+
+              <div id="scale-settings" class="settings-group hidden">
+                <div class="scale-row">
+                  <span class="label-sm">拡大・縮小率</span>
+                  <div class="scale-value">
+                    <span id="scale-val" class="font-num">50</span><span>%</span>
+                  </div>
+                </div>
+                <input type="range" id="input-scale" min="1" max="200" step="1" value="50" class="input-range" />
+              </div>
+            </div>
+
+            <div class="format-section">
+              <div class="fmt-grid">
+                <button class="fmt-btn active" data-fmt="webp">webp</button>
+                <button class="fmt-btn" data-fmt="jpeg">jpeg</button>
+                <button class="fmt-btn" data-fmt="png">png</button>
+              </div>
+              <div id="q-settings">
+                <div class="quality-row">
+                  <p>画質</p>
+                  <span id="q-val" class="font-num">85%</span>
+                </div>
+                <input type="range" id="input-q" min="0.1" max="1" step="0.01" value="0.85" class="input-range dark" />
+              </div>
+            </div>
+
+            <button id="add-queue-btn" disabled class="btn-add-queue disabled">
+              <i data-lucide="check-circle-2" class="icon-sm"></i>
+              仮確定リストに追加
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 03: Queue -->
+    <section id="queue-section" class="section hidden">
+      <div class="section-header">
+        <div class="step-num">03</div>
+        <h2 class="section-title">仮確定リスト</h2>
+        <span id="queue-count" class="queue-count">0</span>
+        <button id="download-all-btn" class="btn-download">
+          <i data-lucide="download" class="icon-sm"></i>
+          <span>一括保存して完了</span>
+        </button>
+      </div>
+      <div id="queue-grid" class="queue-grid"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
