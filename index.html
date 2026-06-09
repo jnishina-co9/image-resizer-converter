@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>画像をリサイズする</title>
+  <title>IMAGE RESIZER & CONVERTER</title>
   <meta name="description" content="ブラウザ上で画像をリサイズ・フォーマット変換できるツール。複数画像の一括処理対応。すべてローカルで処理されます。" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -17,7 +17,10 @@
 
   <header class="header">
     <div class="header-inner">
-      <h1 class="header-title">画像をリサイズする</h1>
+      <h1 class="header-title">
+        IMAGE RESIZER & CONVERTER
+        <span class="header-subtitle">ー 画像リサイズ ＆ フォーマット変換ツール ー</span>
+      </h1>
       <div class="header-badge">
         <i data-lucide="shield-check" class="icon-sm"></i>
         <span>ローカル処理モード</span>
@@ -44,8 +47,10 @@
     <section class="section">
       <input type="file" id="file-input" multiple accept="image/*" class="hidden" />
       <div class="section-header">
-        <div class="step-num">01</div>
-        <h2 class="section-title">画像のアップロードと選択</h2>
+        <h2 class="section-title">
+          <i data-lucide="image" class="icon-md"></i>
+          <span>1. 画像を選択</span>
+        </h2>
         <div class="section-actions">
           <button id="clear-images-btn" class="btn-reset hidden">すべてリセット</button>
         </div>
@@ -65,8 +70,10 @@
     <!-- Section 02: Settings & Preview -->
     <section class="section">
       <div class="section-header">
-        <div class="step-num">02</div>
-        <h2 class="section-title">リサイズ設定とプレビュー</h2>
+        <h2 class="section-title">
+          <i data-lucide="sliders" class="icon-md"></i>
+          <span>2. リサイズ設定とプレビュー</span>
+        </h2>
       </div>
 
       <div class="preview-layout">
@@ -127,7 +134,7 @@
                   </div>
                   <div class="dim-field">
                     <div class="dim-label"><p>高さ</p><span>PX</span></div>
-                    <input type="number" id="input-h" value="800" disabled placeholder="AUTO" class="input-number locked" />
+                    <input type="number" id="input-h" value="800" class="input-number" />
                   </div>
                 </div>
               </div>
@@ -158,10 +165,35 @@
               </div>
             </div>
 
-            <button id="add-queue-btn" disabled class="btn-add-queue disabled">
-              <i data-lucide="check-circle-2" class="icon-sm"></i>
-              仮確定リストに追加
-            </button>
+            <div class="name-rule-section">
+              <div class="name-rule-header">
+                <p>ファイル名ルール</p>
+              </div>
+              <div class="name-rule-inputs">
+                <div class="name-rule-field">
+                  <span class="label-xs">前につける (接頭辞)</span>
+                  <input type="text" id="input-prefix" placeholder="例: thumb_" class="input-text" />
+                </div>
+                <div class="name-rule-field">
+                  <span class="label-xs">後ろにつける (接尾辞)</span>
+                  <input type="text" id="input-suffix" placeholder="例: _min" class="input-text" />
+                </div>
+              </div>
+              <div class="name-rule-preview">
+                <span>変換後：</span><span id="name-preview-text">-</span>
+              </div>
+            </div>
+
+            <div class="add-btn-group">
+              <button id="add-queue-btn" disabled class="btn-add-queue disabled">
+                <i data-lucide="check-circle-2" class="icon-sm"></i>
+                選択中の画像を追加
+              </button>
+              <button id="add-queue-all-btn" disabled class="btn-add-queue-all disabled">
+                <i data-lucide="copy" class="icon-sm"></i>
+                すべての画像を一括追加
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -170,8 +202,10 @@
     <!-- Section 03: Queue -->
     <section id="queue-section" class="section hidden">
       <div class="section-header">
-        <div class="step-num">03</div>
-        <h2 class="section-title">仮確定リスト</h2>
+        <h2 class="section-title">
+          <i data-lucide="list" class="icon-md"></i>
+          <span>3. 仮確定リスト</span>
+        </h2>
         <span id="queue-count" class="queue-count">0</span>
         <button id="download-all-btn" class="btn-download">
           <i data-lucide="download" class="icon-sm"></i>
@@ -181,6 +215,10 @@
       <div id="queue-grid" class="queue-grid"></div>
     </section>
   </main>
+
+  <footer class="footer">
+    <p class="footer-text">© 2026 深森呼吸</p>
+  </footer>
 
   <script src="app.js"></script>
 </body>

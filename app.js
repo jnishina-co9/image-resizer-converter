@@ -38,6 +38,7 @@ const DOM = {
   qSettings: document.getElementById('q-settings'),
   fmtBtns: document.querySelectorAll('.fmt-btn'),
   addQueueBtn: document.getElementById('add-queue-btn'),
+  addQueueAllBtn: document.getElementById('add-queue-all-btn'),
   queueSection: document.getElementById('queue-section'),
   queueGrid: document.getElementById('queue-grid'),
   queueCount: document.getElementById('queue-count'),
@@ -48,6 +49,9 @@ const DOM = {
   previewUnit: document.getElementById('preview-unit'),
   previewFormat: document.getElementById('preview-format'),
   previewQ: document.getElementById('preview-q'),
+  inputPrefix: document.getElementById('input-prefix'),
+  inputSuffix: document.getElementById('input-suffix'),
+  namePreviewText: document.getElementById('name-preview-text'),
 };
 
 // ===== Utilities =====
@@ -112,6 +116,7 @@ async function updateLivePreview() {
   } catch (e) {
     console.error(e);
   }
+  updateNamePreview();
 }
 
 let previewTimeout;
@@ -130,6 +135,8 @@ function renderImages() {
     DOM.previewActive.classList.add('hidden');
     DOM.addQueueBtn.disabled = true;
     DOM.addQueueBtn.className = 'btn-add-queue disabled';
+    DOM.addQueueAllBtn.disabled = true;
+    DOM.addQueueAllBtn.className = 'btn-add-queue-all disabled';
     return;
   }
 
@@ -172,9 +179,23 @@ function renderImages() {
   if (state.selectedId) {
     DOM.previewEmpty.classList.add('hidden');
     DOM.previewActive.classList.remove('hidden');
-    DOM.mainPreviewImg.src = state.images.find(i => i.id === state.selectedId).url;
+    
+    const imgData = state.images.find(i => i.id === state.selectedId);
+    DOM.mainPreviewImg.src = imgData.url;
+
+    // 画像が選ばれた瞬間に、入力欄の数値をその画像の元の実寸サイズ（実際の幅・高さ）に自動更新
+    if (imgData && imgData.w) {
+      state.globalWidth = imgData.w;
+      state.globalHeight = imgData.h;
+      DOM.inputW.value = imgData.w;
+      DOM.inputH.value = imgData.h;
+    }
+
     DOM.addQueueBtn.disabled = false;
     DOM.addQueueBtn.className = 'btn-add-queue enabled';
+    DOM.addQueueAllBtn.disabled = false;
+    DOM.addQueueAllBtn.className = 'btn-add-queue-all enabled';
+    updateNamePreview();
   }
   lucide.createIcons();
 }
@@ -233,7 +254,8 @@ function renderQueue() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${item.name.split('.')[0]}_resized.${item.fmt === 'jpeg' ? 'jpg' : item.fmt}`;
+      const ext = item.fmt === 'jpeg' ? 'jpg' : item.fmt;
+      a.download = `${item.name}.${ext}`;
       a.click();
       URL.revokeObjectURL(url);
     };
@@ -311,23 +333,49 @@ DOM.toggleRatio.onclick = () => {
   DOM.toggleRatio.className = `toggle-btn${state.lockAspectRatio ? ' active' : ''}`;
   DOM.toggleRatio.textContent = state.lockAspectRatio ? '固定' : '解除';
 
-  if (state.lockAspectRatio) {
-    DOM.inputH.disabled = true;
-    DOM.inputH.placeholder = 'AUTO';
-    DOM.inputH.value = '';
-    DOM.inputH.className = 'input-number locked';
-  } else {
-    DOM.inputH.disabled = false;
-    DOM.inputH.placeholder = '';
-    DOM.inputH.value = state.globalHeight;
-    DOM.inputH.className = 'input-number';
+  DOM.inputH.disabled = false;
+  DOM.inputH.placeholder = '';
+  DOM.inputH.className = 'input-number';
+
+  if (state.lockAspectRatio && state.selectedId) {
+    const imgData = state.images.find(img => img.id === state.selectedId);
+    if (imgData && imgData.w) {
+      const h = Math.round(state.globalWidth * (imgData.h / imgData.w));
+      state.globalHeight = h;
+      DOM.inputH.value = h;
+    }
   }
   triggerPreviewUpdate();
 };
 
 // ===== Input Listeners =====
-DOM.inputW.oninput = (e) => { state.globalWidth = parseInt(e.target.value) || 0; triggerPreviewUpdate(); };
-DOM.inputH.oninput = (e) => { state.globalHeight = parseInt(e.target.value) || 0; triggerPreviewUpdate(); };
+DOM.inputW.oninput = (e) => {
+  const w = parseInt(e.target.value) || 0;
+  state.globalWidth = w;
+  if (state.lockAspectRatio && state.selectedId) {
+    const imgData = state.images.find(img => img.id === state.selectedId);
+    if (imgData && imgData.w) {
+      const h = Math.round(w * (imgData.h / imgData.w));
+      state.globalHeight = h;
+      DOM.inputH.value = h;
+    }
+  }
+  triggerPreviewUpdate();
+};
+
+DOM.inputH.oninput = (e) => {
+  const h = parseInt(e.target.value) || 0;
+  state.globalHeight = h;
+  if (state.lockAspectRatio && state.selectedId) {
+    const imgData = state.images.find(img => img.id === state.selectedId);
+    if (imgData && imgData.w) {
+      const w = Math.round(h * (imgData.w / imgData.h));
+      state.globalWidth = w;
+      DOM.inputW.value = w;
+    }
+  }
+  triggerPreviewUpdate();
+};
 DOM.inputScale.oninput = (e) => { state.scale = parseInt(e.target.value); DOM.scaleVal.textContent = state.scale; triggerPreviewUpdate(); };
 
 // ===== Format Buttons =====
@@ -359,10 +407,17 @@ DOM.addQueueBtn.onclick = () => {
     th = Math.round(tw * (imgData.h / imgData.w));
   }
 
+  const prefix = DOM.inputPrefix.value.trim();
+  const suffix = DOM.inputSuffix.value.trim();
+  const originalName = imgData.name;
+  const dotIndex = originalName.lastIndexOf('.');
+  const baseName = dotIndex !== -1 ? originalName.substring(0, dotIndex) : originalName;
+  const formattedName = `${prefix}${baseName}${suffix}`;
+
   state.exportQueue.push({
     id: Math.random().toString(36).substr(2, 9),
     srcId: imgData.id,
-    name: imgData.name,
+    name: formattedName,
     tw, th, fmt: state.format, q: state.quality
   });
   renderQueue();
@@ -383,10 +438,11 @@ DOM.dlAllBtn.onclick = async () => {
     const srcImg = state.images.find(img => img.id === item.srcId);
     if (srcImg) {
       const blob = await resizeImageBlob(srcImg.file, item.tw, item.th, item.fmt, item.q);
-      const baseName = item.name.split('.')[0];
+      const baseName = item.name;
       names[baseName] = (names[baseName] || 0) + 1;
       const ext = item.fmt === 'jpeg' ? 'jpg' : item.fmt;
-      zip.file(`${baseName}-${names[baseName]}.${ext}`, blob);
+      const fileName = names[baseName] > 1 ? `${baseName}-${names[baseName]}.${ext}` : `${baseName}.${ext}`;
+      zip.file(fileName, blob);
     }
   }
 
@@ -407,4 +463,59 @@ DOM.dlAllBtn.onclick = async () => {
   setTimeout(() => document.getElementById('success-toast').classList.add('hidden'), 5000);
 
   confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#000000', '#444444', '#888888'] });
+};
+
+// ===== Naming Rule Preview =====
+function updateNamePreview() {
+  const selectedImg = state.images.find(img => img.id === state.selectedId);
+  if (!selectedImg || !DOM.namePreviewText) {
+    if (DOM.namePreviewText) DOM.namePreviewText.textContent = '-';
+    return;
+  }
+  const originalName = selectedImg.name;
+  const dotIndex = originalName.lastIndexOf('.');
+  const baseName = dotIndex !== -1 ? originalName.substring(0, dotIndex) : originalName;
+  
+  const prefix = DOM.inputPrefix.value;
+  const suffix = DOM.inputSuffix.value;
+  
+  const ext = state.format === 'jpeg' ? 'jpg' : state.format;
+  DOM.namePreviewText.textContent = `${prefix}${baseName}${suffix}.${ext}`;
+}
+
+DOM.inputPrefix.oninput = () => updateNamePreview();
+DOM.inputSuffix.oninput = () => updateNamePreview();
+
+// ===== Bulk Add to Queue =====
+DOM.addQueueAllBtn.onclick = () => {
+  if (state.images.length === 0) return;
+
+  const prefix = DOM.inputPrefix.value.trim();
+  const suffix = DOM.inputSuffix.value.trim();
+
+  state.images.forEach(imgData => {
+    let tw = state.globalWidth;
+    let th = state.globalHeight;
+
+    if (state.resizeMode === 'scale') {
+      tw = Math.round(imgData.w * (state.scale / 100));
+      th = Math.round(imgData.h * (state.scale / 100));
+    } else if (state.lockAspectRatio) {
+      th = Math.round(tw * (imgData.h / imgData.w));
+    }
+
+    const originalName = imgData.name;
+    const dotIndex = originalName.lastIndexOf('.');
+    const baseName = dotIndex !== -1 ? originalName.substring(0, dotIndex) : originalName;
+    const formattedName = `${prefix}${baseName}${suffix}`;
+
+    state.exportQueue.push({
+      id: Math.random().toString(36).substr(2, 9),
+      srcId: imgData.id,
+      name: formattedName,
+      tw, th, fmt: state.format, q: state.quality
+    });
+  });
+
+  renderQueue();
 };
