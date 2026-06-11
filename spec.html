@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IMAGE RESIZER & CONVERTER — プロダクト仕様書</title>
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>仕様書 | IMAGE RESIZER & CONVERTER</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
@@ -84,6 +86,7 @@
     text-decoration: none;
     display: block;
     transition: opacity 0.2s ease;
+    line-height: 1.3;
   }
 
   .sidebar__app-name:hover {
@@ -743,7 +746,7 @@
   <!-- ======= SIDEBAR ======= -->
   <aside class="sidebar" id="sidebar" role="navigation" aria-label="目次">
     <div class="sidebar__brand">
-      <a href="#" class="sidebar__app-name">IMAGE RESIZER</a>
+      <a href="#" class="sidebar__app-name">IMAGE RESIZER &amp; CONVERTER</a>
       <div class="sidebar__doc-type">プロダクト仕様書 v1.0</div>
     </div>
 
@@ -791,7 +794,7 @@
     <header class="page-header">
       <div class="page-header__eyebrow">PRODUCT SPECIFICATION</div>
       <h1 class="page-header__title">IMAGE RESIZER & CONVERTER</h1>
-      <div class="page-header__subtitle">画像リサイズ ＆ フォーマット変換ツール</div>
+      <div class="page-header__subtitle">画像リサイズ ＆ ファイル形式変換ツール</div>
       <div class="page-header__meta">
         <div class="meta-badge">
           <span class="meta-badge__label">Version</span>
@@ -830,7 +833,7 @@
             <tbody>
               <tr>
                 <th>アプリ概要</th>
-                <td>ブラウザ上で画像をリサイズやフォーマット（形式）変換できる、インストール不要・完全無料のWebツール（複数画像の一括処理に対応）</td>
+                <td>ブラウザ上で画像をリサイズやフォーマット（ファイル形式）変換できる、インストール不要・完全無料のWebツール（複数画像の一括処理に対応）</td>
               </tr>
               <tr>
                 <th>技術スタック</th>
@@ -1105,7 +1108,7 @@
               <svg class="accordion__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="accordion__body" id="body-4-1">
-              <p>画像を設定する際、リサイズ後の「幅・高さ」や「予測されるファイル容量（KB/MB）」が画面上で常に更新されます。保存ボタンを押す前に、どのくらい軽くなるかを確認できます。</p>
+              <p>画像を設定する際、リサイズ後の幅・高さや、予測されるファイル容量が画面上で常に更新されます。保存ボタンを押す前に、どのくらい軽くなるかを確認できます。</p>
             </div>
           </div>
 
@@ -1213,19 +1216,6 @@
             </div>
           </div>
 
-          <div class="accordion" id="acc-5-4">
-            <button class="accordion__trigger" aria-expanded="false" aria-controls="body-5-4">
-              <div class="accordion__trigger-left">
-                <span class="accordion__tag accordion__tag--rationale">最適化</span>
-                <span class="accordion__title">最新フォーマット「WebP」への対応と細やかな画質調整</span>
-              </div>
-              <svg class="accordion__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="accordion__body" id="body-5-4">
-              <p>一般的なJPEGやPNGに加えて、よりファイル容量を軽くできる次世代画像フォーマット「WebP（ウェッピー）」への変換に対応しています。画質のパーセント調整機能と組み合わせることで、ウェブサイトの表示高速化に最適な画像を簡単に作成できます。</p>
-            </div>
-          </div>
-
         </div>
       </section>
 
@@ -1266,7 +1256,7 @@
             </div>
             <div class="flow-step__content">
               <div class="flow-step__title">仮確定リストへ追加</div>
-              <div class="flow-step__desc">「選択中の画像を追加」または「一括追加」で、現在の設定を仮確定リストに送る</div>
+              <div class="flow-step__desc">選択中の画像を追加、または一括追加で、現在の設定を仮確定リストに送る</div>
             </div>
           </div>
           <div class="flow-step">
@@ -1286,7 +1276,7 @@
             </div>
             <div class="flow-step__content">
               <div class="flow-step__title">ダウンロード</div>
-              <div class="flow-step__desc">個別ダウンロード、またはJSZipで全データをZIPに圧縮して一括保存</div>
+              <div class="flow-step__desc">個別ダウンロード、またはJSZipで、全データをZIPに圧縮して一括保存</div>
             </div>
           </div>
         </div>
@@ -1303,7 +1293,7 @@
         <div class="section-body">
           <div style="background: var(--color-base); padding: 32px 24px; line-height: 2.0;">
             <p style="margin-bottom: 16px;">世の中には多機能なプロ向け画像編集ソフトや、機能が単一な簡易ツールが数多く存在します。本ツールは、その中間に位置する「インストール不要の手軽さ」と「リネーム機能や一括処理といった実用性」を両立させることを目指しました。</p>
-            <p>「アスペクト比の保持」や「リアルタイムの予測容量表示」など、利用者が迷わずに目的を果たせるよう細部のUIを作り込んだ結果、非エンジニアの方でも直感的に使いこなせる、実用的で心地よいツールを完成させることができました。</p>
+            <p>アスペクト比の保持やリアルタイムの予測容量表示など、利用者が迷わずに目的を果たせるよう細部のUIを作り込んだ結果、非エンジニアの方でも直感的に使いこなせる、実用的で心地よいツールを完成させることができました。</p>
           </div>
         </div>
       </section>

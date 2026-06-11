@@ -462,7 +462,7 @@ DOM.dlAllBtn.onclick = async () => {
   document.getElementById('success-toast').classList.remove('hidden');
   setTimeout(() => document.getElementById('success-toast').classList.add('hidden'), 5000);
 
-  confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#000000', '#444444', '#888888'] });
+  confetti({ particleCount: 300, spread: 70, origin: { y: 0.6 } });
 };
 
 // ===== Naming Rule Preview =====
